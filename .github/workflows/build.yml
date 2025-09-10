@@ -1,0 +1,99 @@
+name: Build Laboras
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact_name: Laboras-Linux
+            artifact_ext: .AppImage
+          - os: windows-latest
+            platform: win
+            artifact_name: Laboras-Windows
+            artifact_ext: .exe
+          - os: macos-latest
+            platform: mac
+            artifact_name: Laboras-macOS
+            artifact_ext: .dmg
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for ${{ matrix.platform }}
+        run: npm run build:${{ matrix.platform }} -- --publish never
+
+      # Upload Windows artifacts
+      - name: Upload Windows artifacts
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+          retention-days: 30
+
+      # Upload macOS artifacts  
+      - name: Upload macOS artifacts
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            dist/*.dmg
+            dist/*.dmg.blockmap
+            dist/*.zip
+          retention-days: 30
+
+      # Upload Linux artifacts
+      - name: Upload Linux artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            dist/*.AppImage
+            dist/*.AppImage.blockmap
+          retention-days: 30
+
+  # Optional: Create a summary job that runs after all builds
+  summary:
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All platform builds completed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts Available:" >> $GITHUB_STEP_SUMMARY
+          echo "- Linux: Laboras-Linux (AppImage)" >> $GITHUB_STEP_SUMMARY
+          echo "- Windows: Laboras-Windows (NSIS Installer)" >> $GITHUB_STEP_SUMMARY
+          echo "- macOS: Laboras-macOS (DMG)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download artifacts from the Actions tab → This workflow run → Artifacts section" >> $GITHUB_STEP_SUMMARY

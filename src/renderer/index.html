@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboras</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-title">Laboras</h1>
+                <p class="app-subtitle">Productivity Recording</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="sessions">
+                    Sessions
+                </button>
+                <button class="nav-item" data-view="settings">
+                    Settings
+                </button>
+                <button class="nav-item" data-view="about">
+                    About
+                </button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div id="sessions-view" class="view active">
+                <div class="view-header">
+                    <div class="header-controls">
+                        <div class="search-container">
+                            <input type="text" id="search-input" placeholder="Search sessions..." class="search-input">
+                        </div>
+                        <button id="new-session-btn" class="btn btn-primary">
+                            New Session
+                        </button>
+                    </div>
+                    <div class="filter-controls">
+                        <select id="tag-filter" class="filter-select">
+                            <option value="">All Tags</option>
+                        </select>
+                        <select id="sort-select" class="filter-select">
+                            <option value="recent">Most Recent</option>
+                            <option value="duration">Duration</option>
+                            <option value="alphabetical">Alphabetical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="sessions-grid" id="sessions-grid">
+                    <div class="empty-state">
+                        <div class="empty-icon">📹</div>
+                        <h3>No sessions yet</h3>
+                        <p>Create your first recording session to get started</p>
+                        <button class="btn btn-primary" onclick="document.getElementById('new-session-btn').click()">
+                            Create Session
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-view" class="view">
+                <div class="view-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h3>Recording Settings</h3>
+                        <div class="setting-item">
+                            <label for="video-quality">Video Quality</label>
+                            <select id="video-quality" class="setting-select">
+                                <option value="480p">480p</option>
+                                <option value="720p">720p (Recommended)</option>
+                                <option value="1080p">1080p</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="frame-rate">Frame Rate</label>
+                            <select id="frame-rate" class="setting-select">
+                                <option value="15">15 fps (Recommended)</option>
+                                <option value="30">30 fps</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <div id="custom-fps-container" class="custom-fps-container hidden">
+                                <input type="number" id="custom-fps-input" class="setting-input" min="1" max="240" step="1">
+                                <span class="fps-hint">fps</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Storage Settings</h3>
+                        <div class="setting-item">
+                            <label for="sessions-directory">Storage Directory</label>
+                            <div class="directory-selector">
+                                <input type="text" id="sessions-directory" readonly class="setting-input">
+                                <button id="browse-directory" class="btn btn-primary">Browse</button>
+                                <button id="reset-directory" class="btn btn-secondary">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="about-view" class="view">
+                <div class="view-header">
+                    <h2>About Laboras</h2>
+                </div>
+                <div class="about-content">
+                    <div class="about-section">
+                        <div class="about-logo">
+                            <img src="../../logo.png" alt="Laboras Logo" class="logo-image">
+                        </div>
+                        <h3>Laboras - Productivity Recording</h3>
+                        <p class="version">Version 0.1.0</p>
+                        <p class="description">
+                            A Free and Open Source productivity application that helps users improve their work efficiency 
+                            by recording work sessions and providing playback for self-analysis.
+                        </p>
+                    </div>
+                    <div class="about-section">
+                        <h4>License</h4>
+                        <p>GPL 2.0 - Free and Open Source Software</p>
+                    </div>
+                    <div class="about-section">
+                        <h4>Source Code</h4>
+                        <p>View on <a href="#" id="github-link" class="external-link">GitHub</a></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Video Player View - Replaces main content -->
+        <div id="video-player-view" class="video-player-view">
+            <div class="video-content">
+                <div class="video-main">
+                    <div class="video-container">
+                        <video id="session-video-player" controls class="video-player">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+                
+                <div class="session-bottom">
+                    <div class="session-info">
+                        <div class="session-info-header">
+                            <h3 id="session-info-title">Session Title</h3>
+                            <div class="session-actions">
+                                <button id="edit-session-btn" class="btn btn-secondary">Edit</button>
+                                <button id="delete-session-video-btn" class="btn btn-danger">Delete</button>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <span class="value" id="session-description-detail">--</span>
+                        </div>
+                        <div class="info-row">
+                            <div class="tags" id="session-tags-detail">--</div>
+                        </div>
+                        <div class="info-row info-row-split">
+                            <div class="info-half">
+                                <label>Duration</label>
+                                <span class="value" id="session-duration-detail">--</span>
+                            </div>
+                            <div class="info-half">
+                                <label>Created</label>
+                                <span class="value" id="session-created-detail">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="session-notes">
+                        <h3>Notes</h3>
+                        <div class="notes-list" id="session-notes-list">
+                            <div class="no-notes">No notes for this session.</div>
+                        </div>
+                        <div class="notes-input-section">
+                            <input type="text" id="video-note-input" placeholder="Add a note..." class="note-input-field">
+                            <button id="video-add-note-btn" class="btn-icon-only note-add-btn">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="right-panel">
+            <div id="session-details" class="session-details hidden">
+                <div class="details-header">
+                    <h3 id="session-title">Session Details</h3>
+                    <button id="close-details" class="btn-icon-only">✕</button>
+                </div>
+                <div class="details-content">
+                    <div class="detail-item">
+                        <label>Duration</label>
+                        <span id="session-duration">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status</label>
+                        <span id="session-status">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created</label>
+                        <span id="session-created">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Tags</label>
+                        <div id="session-tags" class="tag-list">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recording-panel" class="recording-panel hidden">
+                <div class="recording-header">
+                    <h3>Recording Session</h3>
+                    <div class="recording-status">
+                        <span class="status-indicator" id="status-indicator">⏸</span>
+                        <span id="recording-duration">00:00:00</span>
+                    </div>
+                </div>
+                <div class="recording-controls">
+                    <button id="start-recording" class="btn btn-success">Start</button>
+                    <button id="pause-recording" class="btn btn-warning hidden">⏸ Pause</button>
+                    <button id="stop-recording" class="btn btn-danger hidden">Stop</button>
+                    <button id="play-session-btn" class="btn btn-primary hidden">Play</button>
+                    <button id="delete-session-btn" class="btn btn-danger hidden">Delete</button>
+                </div>
+                <div class="recording-info">
+                    <div class="info-item">
+                        <label>File Size</label>
+                        <span id="file-size-estimate">0 MB</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Quality</label>
+                        <span id="current-quality">720p @ 15fps</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Tags</label>
+                        <div id="session-tags-display" class="tag-list">--</div>
+                    </div>
+                </div>
+                <div class="recording-notes">
+                    <div class="notes-header">
+                        <h4>Session Notes</h4>
+                    </div>
+                    <div class="notes-messages" id="notes-messages">
+                        <div class="notes-empty">Start recording to add timestamped notes...</div>
+                    </div>
+                    <div class="notes-input">
+                        <input type="text" id="note-input" placeholder="Add a note..." disabled>
+                        <button id="add-note-btn" class="btn-icon-only" disabled>➤</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="confirmation-dialog" class="modal hidden">
+        <div class="modal-content confirmation-content">
+            <div class="modal-header">
+                <h3 id="confirmation-title">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmation-message">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmation-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="confirmation-confirm" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-session-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>New Session</h3>
+                <button id="close-modal" class="btn-icon-only">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="session-title-input">Title *</label>
+                    <input type="text" id="session-title-input" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="session-description">Description</label>
+                    <textarea id="session-description" class="form-textarea" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="session-tags-input">Tags</label>
+                    <div class="tags-input-container">
+                        <div class="tags-display" id="tags-display"></div>
+                        <input type="text" id="session-tags-input" class="tags-input" placeholder="coding, review, project name">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-session" class="btn btn-secondary">Cancel</button>
+                <button id="create-session" class="btn btn-primary">Create Session</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
